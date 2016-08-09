@@ -23,7 +23,6 @@
 #include <strsafe.h>
 #include "httpserv.h"
 
-#include <stdio.h>
 
 //  Project header files
 #include "mymodule.h"
@@ -103,15 +102,15 @@ char *GetIpAddr(apr_pool_t *pool, PSOCKADDR pAddr)
 	
 	int extra_length = 0;
 	
-	if(pAddr->sa_family == AF_INET6)
-	{
-		extra_length = 12; 
-	}
-	
+	if (pAddr->sa_family == AF_INET6) {
+        extra_length = 12;
+    }
+
 	WSAAddressToString(pAddr, sizeof (SOCKADDR) + extra_length, NULL, buf, &len);
 	
-	if(pAddr->sa_family == AF_INET6)
+	if (pAddr->sa_family == AF_INET6)
 	{
+        // buffer contains ":12345"
 		while ((c = *src++) != '\0')
 		{
 			if (c == '[')
@@ -126,6 +125,7 @@ char *GetIpAddr(apr_pool_t *pool, PSOCKADDR pAddr)
 	}
 	else
 	{
+        // buffer contains "192.168.1.123:12345"
 		while ((c = *src) != '\0')
 		{
 			if (c == ':')
