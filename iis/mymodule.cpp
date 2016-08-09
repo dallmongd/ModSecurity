@@ -23,6 +23,8 @@
 #include <strsafe.h>
 #include "httpserv.h"
 
+#include <stdio.h>
+
 //  Project header files
 #include "mymodule.h"
 #include "mymodulefactory.h"
@@ -90,14 +92,51 @@ char *GetIpAddr(apr_pool_t *pool, PSOCKADDR pAddr)
 {
 	DWORD len = 50;
 	char *buf = (char *)apr_palloc(pool, len);
-
+	char *src = buf;
+	char *dst = buf;
+	char c;
+	
 	if(buf == NULL)
 		return "";
 
 	buf[0] = 0;
-
-	WSAAddressToString(pAddr, sizeof(SOCKADDR), NULL, buf, &len);
-
+	
+	int extra_length = 0;
+	
+	if(pAddr->sa_family == AF_INET6)
+	{
+		extra_length = 12; 
+	}
+	
+	WSAAddressToString(pAddr, sizeof (SOCKADDR) + extra_length, NULL, buf, &len);
+	
+	if(pAddr->sa_family == AF_INET6)
+	{
+		while ((c = *src++) != '\0')
+		{
+			if (c == '[')
+				continue;
+			if (c == ']')
+			{
+				*dst = '\0';
+				break;
+			}
+			*dst++ = c;
+		}
+	}
+	else
+	{
+		while ((c = *src) != '\0')
+		{
+			if (c == ':')
+			{
+				*src = '\0';
+				break;
+			}
+			++src;
+		}
+	}
+	
 	return buf;
 }
 
